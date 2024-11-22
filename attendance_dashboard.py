@@ -15,6 +15,7 @@ def display_attendance():
             st.dataframe(df)
     except pd.errors.ParserError as e:
         st.error(f"Error reading the CSV file: {str(e)}")
+    except FileNotFoundError:
         st.error("Attendance file not found. Make sure attendance has been marked.")
     except Exception as e:
         st.error(f"An unexpected error occurred: {str(e)}")
