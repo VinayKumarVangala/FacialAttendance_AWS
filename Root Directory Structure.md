@@ -13,10 +13,11 @@
 │   └── pins.pkl                # Pickle file for storing PIN labels
 │
 ├── /static/                    # Directory for static assets like CSS, JS, etc.
-│   └── attendance.html         # HTML file to view attendance data from S3
+│   └── attendance_dashboard.html         # HTML file to view attendance data from S3
 │
-├── add_faces.py                # Python script for capturing faces and storing data
-├── test.py                     # Python script for facial recognition and attendance logging
+├── register_faces.py           # Python script for capturing faces and storing data
+├── mark_attendance.py          # Python script for facial recognition and attendance logging
+├── attendance_dashboard.py     # View and filter attendance records in an intuitive dashboard.
 ├── requirements.txt            # File listing Python dependencies (`boto3`, `opencv-python`, etc.)
 └── README.md                   # Optional: Documentation for the project
 
@@ -33,9 +34,9 @@ pins.pkl: Stores the corresponding labels (pins) for each recognized face.
 3. /static/
 This directory contains static assets such as the HTML file.
 attendance.html: The webpage used to display the attendance records. It fetches CSV data from AWS S3 and displays it in a table.
-4. add_faces.py
+4. register_faces.py
 Script used to capture new faces and store them in the faces_data.pkl and names.pkl files.
-5. test.py
+5. mark_attendance.py and mark_attendance.html
 Main script used for real-time facial recognition.
 It also logs attendance and uploads the CSV files to the S3 bucket.
 6. requirements.txt
@@ -59,9 +60,10 @@ Contains the dependencies required for this project
 │   └── pins.pkl
 │
 ├── /static/
-│   └── attendance.html
+│   └── attendance_dashboard.html
 │
-├── add_faces.py
-├── test.py
+├── register_faces.py
+├── mark_attendance.py
+├── attendance_dashboard.py
 ├── requirements.txt
 └── README.md

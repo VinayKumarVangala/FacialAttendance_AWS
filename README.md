@@ -22,18 +22,18 @@ win32com.client: Text-to-speech functionality for alerts.
 ### AWS Services:
 S3: Secure storage for attendance files.
 ## How It Works
-### Face Registration (add_faces.py):
+### Face Registration (register_faces.py):
 Users register by entering their name and PIN.
 Face images are captured, processed, and stored using OpenCV and NumPy.
 User data is serialized with pickle.
 
-### Attendance Marking (test.py):
+### Attendance Marking (mark_attendance.py):
 Detect and recognize faces in real-time using OpenCV and scikit-learn's KNN algorithm.
 Log attendance in .csv format and upload it to AWS S3.
 Data Visualization:
 
-### Streamlit (app.py): 
+### Streamlit (attendance_dashboard.py): 
 View and filter attendance records in an intuitive dashboard.
-### HTML (attendance.html): 
+### HTML (attendance_dashboard.html): 
 Search and view records in a user-friendly table format.
 
