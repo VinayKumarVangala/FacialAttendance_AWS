@@ -1,0 +1,48 @@
+1. CSV File Handling in test.py
+Do you want to keep the attendance format the same (name, time)?
+>>S.no,name, time, date
+Should I keep any additional features for attendance logging, like a unique ID for each entry?
+>> Yes
+2. S3 Upload Logic
+Do you want the code to ensure it always uploads the latest attendance CSV to S3? Any specific conditions for uploading?
+>> No
+If you're using access keys, should I include those in the code or keep them as environment variables?
+3. HTML File (attendance.html)
+Any specific styling or layout preferences?
+>> Scrolling Heading
+Should I keep the same interactive features, or do you want to add more?
+>> Yes
+4. Background Image and Other Assets
+Are there any changes needed for the background image or other assets used in the project?
+>> No
+5. Additional Features
+Any other features or functionalities you'd like to include in any of the files?
+>> No
+
+Dont keep any place place holders, I'll give the details regarding AWS
+Bucket name:facial-attendance-system
+IAM User name : attendance-app
+AKIAQMZHWNDKDTTIMPFX - Access key
+RqjBuAIVj7N+PbtIkNhq//+ZvV7Cfdw3TljceYZ3 - Secret access key
+Policy name: 
+>>AmazonS3FullAccess
+>>S3Policy
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::facial-attendance-system/*"
+            ]
+        }
+    ]
+}
+File Path: Yes attendance CSV files always be stored in a specific folder within the bucket (e.g., Attendance/)
+Date Format: (DD-MM-YYYY)
+
+If any other details required ask for it, don't leave place holders in the code.

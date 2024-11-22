@@ -1,0 +1,35 @@
+S3 Bucket: 
+facial-attendance-system
+
+IAM:
+attendance-app
+
+AKIAQMZHWNDKDTTIMPFX - Access key
+RqjBuAIVj7N+PbtIkNhq//+ZvV7Cfdw3TljceYZ3 - Secret access key
+
+
+
+Bucket name:facial-attendance-system
+IAM User name : attendance-app
+AKIAQMZHWNDKDRRE5GEY - Access key
+HYhzQW2j3+GDNbRB8FzGwoAUdYWGU0g/nIfhVQIe - Secret access key
+Policy name: 
+>>AmazonS3FullAccess
+>>S3Policy
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::facial-attendance-system/*"
+            ]
+        }
+    ]
+}
+File Path: Yes attendance CSV files always be stored in a specific folder within the bucket (e.g., Attendance/)
+Date Format: (DD-MM-YYYY)

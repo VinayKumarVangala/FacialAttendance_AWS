@@ -1,0 +1,9 @@
+opencv-python
+numpy
+scikit-learn
+streamlit
+pandas
+pywin32
+pickle5
+boto3
+pyttsx3

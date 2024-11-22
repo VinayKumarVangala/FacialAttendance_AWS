@@ -1,0 +1,215 @@
+Are they any changes !? 
+Features: 
+- Marks attendance into csv file only on pressing p
+- Creates new file on every new attendance mark everyday
+- Reflects the same csv on running app.py
+
+>>test.py
+
+from sklearn.neighbors import KNeighborsClassifier 
+import cv2
+import pickle
+import numpy as np
+import os
+import csv
+import time
+from datetime import datetime
+from win32com.client import Dispatch
+import boto3
+
+def speak(str1):
+    speak = Dispatch(("SAPI.SpVoice"))
+    speak.Speak(str1)
+
+# AWS credentials
+BUCKET_NAME = 'facial-attendance-system'
+ACCESS_KEY = 'AKIAQMZHWNDKDTTIMPFX'
+SECRET_ACCESS_KEY = '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'
+
+# Boto3 S3 client setup
+s3 = boto3.client('s3', aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_ACCESS_KEY)
+
+ts = time.time()
+date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
+timestamp = datetime.fromtimestamp(ts).strftime("%H:%M-%S")
+
+video = cv2.VideoCapture(0)
+facedetect = cv2.CascadeClassifier('data/haarcascade_frontalface_default.xml')
+
+with open('data/names.pkl', 'rb') as w:
+    LABELS = pickle.load(w)
+with open('data/faces_data.pkl', 'rb') as f:
+    FACES = pickle.load(f)
+
+print('Shape of Faces matrix --> ', FACES.shape)
+
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(FACES, LABELS)
+
+imgBackground = cv2.imread("background.png")
+
+COL_NAMES = ['S.no', 'Name', 'Time', 'Date', 'UniqueID']
+attendance_list = []
+unique_id = 1
+
+while True:
+    ret, frame = video.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = facedetect.detectMultiScale(gray, 1.3, 5)
+    for (x, y, w, h) in faces:
+        crop_img = frame[y:y+h, x:x+w, :]
+        resized_img = cv2.resize(crop_img, (50, 50)).flatten().reshape(1, -1)
+        output = knn.predict(resized_img)
+        ts = time.time()
+        timestamp = datetime.fromtimestamp(ts).strftime("%H:%M-%S")
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (50, 50, 255), 2)
+        cv2.rectangle(frame, (x, y-40), (x+w, y), (50, 50, 255), -1)
+        cv2.putText(frame, str(output[0]), (x, y-15), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 1)
+        attendance = [str(unique_id), str(output[0]), str(timestamp), str(date), str(unique_id)]
+        unique_id += 1
+        attendance_list.append(attendance)
+
+    imgBackground[162:162 + 480, 55:55 + 640] = frame
+    cv2.imshow("Frame", imgBackground)
+
+    # Capture and store attendance only when 'p' is pressed
+    k = cv2.waitKey(1)
+    if k == ord('p'):  # Mark attendance only when 'p' is pressed
+        speak("Attendance Taken..")
+        time.sleep(2)
+        file_path = f"Attendance/Attendance_{date}.csv"
+        exist = os.path.isfile(file_path)
+        
+        if exist:
+            with open(file_path, "a", newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                for record in attendance_list:
+                    writer.writerow(record)
+        else:
+            with open(file_path, "a", newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(COL_NAMES)
+                for record in attendance_list:
+                    writer.writerow(record)
+        
+        # Upload to AWS S3
+        s3.upload_file(file_path, BUCKET_NAME, 'Attendance/' + f"Attendance_{date}.csv")
+        attendance_list = []  # Reset the list after uploading
+
+    if k == ord('q'):
+        break
+
+video.release()
+cv2.destroyAllWindows()
+
+
+>>attendance.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 50px auto;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #attendanceTable {
+            overflow-y: scroll;
+            max-height: 400px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Attendance Records</h1>
+    <div id="attendanceTable">
+        <table>
+            <thead>
+                <tr>
+                    <th>S.no</th>
+                    <th>Name</th>
+                    <th>Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchAttendance() {
+            const response = await fetch('https://facial-attendance-system.s3.amazonaws.com/Attendance/Attendance_22-09-2024.csv');
+            const text = await response.text();
+            const rows = text.split('\n').slice(1);  // Skip header row
+
+            const table = document.getElementById('tableBody');
+            rows.forEach(row => {
+                if(row.trim() !== "") {
+                    const cols = row.split(',');
+                    const tr = document.createElement('tr');
+                    cols.forEach(col => {
+                        const td = document.createElement('td');
+                        td.innerText = col;
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                }
+            });
+        }
+        fetchAttendance();
+    </script>
+</body>
+</html>
+
+>>app.py 
+
+import pandas as pd
+import streamlit as st
+from datetime import datetime
+
+# File paths
+date = datetime.now().strftime('%d-%m-%Y')
+csv_file_path = f"Attendance_{date}.csv"
+
+def display_attendance():
+    try:
+        # Use 'on_bad_lines' to skip bad lines
+        df = pd.read_csv(csv_file_path, on_bad_lines='skip')  # Skip malformed rows
+        if df.empty:
+            st.write("No attendance data available yet.")
+        else:
+            st.dataframe(df)
+    except pd.errors.ParserError as e:
+        st.error(f"Error reading the CSV file: {str(e)}")
+    except FileNotFoundError:
+        st.error("Attendance file not found. Make sure attendance has been marked.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {str(e)}")
+
+# Streamlit app
+st.title("Attendance for the day")
+display_attendance()

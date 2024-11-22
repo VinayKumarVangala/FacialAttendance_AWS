@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Attendance Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 0;
+            font-size: 36px;
+            animation: colorChange 2s infinite;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 18px;
+            margin: 0;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            animation: colorChange 2s infinite;
+        }
+
+        @keyframes colorChange {
+            0% { color: white; }
+            50% { color: lightgreen; }
+            100% { color: white; }
+        }
+
+        marquee {
+            display: block;
+            margin-top: 10px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        #searchBar {
+            display: block;
+            width: 30%;
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .scroll-text {
+            font-size: 22px;
+            color: #4CAF50;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 30px auto;
+            background-color: #fff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-size: 16px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #d9ffd9;
+            cursor: pointer;
+        }
+
+        #attendanceTable {
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #4CAF50;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Government Institute of Electronics</h1>
+    <h2>Facial Attendance records of CCB Students</h2>
+    
+    <marquee class="scroll-text" behavior="scroll" direction="left" scrollamount="08">
+        Check your Attendance here, Make sure to be regular to the classes !
+    </marquee>
+
+    <input type="text" id="searchBar" placeholder="Search by PIN..." onkeyup="filterTable()">
+
+    <div class="loader" id="loader"></div>
+
+    <div id="attendanceTable">
+        <table>
+            <thead>
+                <tr>
+                    <th>S.no</th>
+                    <th>Name</th>
+                    <th>Time</th>
+                    <th>Date</th>
+                    <th>PIN</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchAttendance() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block'; // Show loader
+
+            const todayDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-'); // Format: DD-MM-YYYY
+            const response = await fetch(`https://facial-attendance-system.s3.amazonaws.com/Attendance/Attendance_${todayDate}.csv`);
+            const text = await response.text();
+            const rows = text.split('\n').slice(1);  // Skip header row
+
+            const table = document.getElementById('tableBody');
+            rows.forEach(row => {
+                if(row.trim() !== "") {
+                    const cols = row.split(',');
+                    const tr = document.createElement('tr');
+                    cols.forEach(col => {
+                        const td = document.createElement('td');
+                        td.innerText = col;
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                }
+            });
+
+            loader.style.display = 'none'; // Hide loader after loading
+        }
+
+        function filterTable() {
+            const input = document.getElementById("searchBar");
+            const filter = input.value.toUpperCase();
+            const table = document.querySelector("tbody");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[4];  // Search in PIN column (5th column)
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+
+        fetchAttendance();
+    </script>
+</body>
+</html>
