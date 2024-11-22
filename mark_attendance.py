@@ -35,7 +35,7 @@ print('Shape of Faces matrix --> ', FACES.shape)
 knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(FACES, LABELS)
 
-imgBackground = cv2.imread("background.png")
+imgBackground = cv2.imread("UI_background.png")
 
 # Set up CSV for today's attendance
 COL_NAMES = ['S.no', 'Name', 'Time', 'Date', 'PIN']  # Removed UniqueID, Added PIN
